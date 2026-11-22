@@ -1,0 +1,13 @@
+customer_id,customer_unique_id,customer_city,customer_state
+c001,u001,sao paulo,SP
+c002,u002,rio de janeiro,RJ
+c003,u003,sao paulo,SP
+c004,u004,belo horizonte,MG
+c005,u005,sao paulo,SP
+c006,u006,rio de janeiro,RJ
+c007,u001,sao paulo,SP
+c008,u008,belo horizonte,MG
+c009,u009,sao paulo,SP
+c010,u010,rio de janeiro,RJ
+c011,u011,sao paulo,SP
+c012,u012,belo horizonte,MG
