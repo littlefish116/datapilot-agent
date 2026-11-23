@@ -68,15 +68,14 @@ DataPilot/
 ├── models/                         # 训练后模型与元数据
 ├── .env.example
 ├── .gitignore
-├── requirements.txt               # 项目直接依赖
-└── requirements-lock.txt          # 开发环境完整快照
+└── requirements.txt               # 项目直接依赖
 ```
 
 项目还保留了 `README_FIRST_ROUND.md` 作为早期阶段练习说明。
 
 ## 4. 数据来源与处理
 
-使用 **Olist Brazilian E-Commerce Public Dataset** 的历史电商订单数据。项目导入九张原始数据表：`orders`、`order_items`、`order_payments`、`order_reviews`、`customers`、`products`、`sellers`、`geolocation` 和 `category_translation`。
+使用 **Olist Brazilian E-Commerce Public Dataset(https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce)** 的历史电商订单数据。项目导入九张原始数据表：`orders`、`order_items`、`order_payments`、`order_reviews`、`customers`、`products`、`sellers`、`geolocation` 和 `category_translation`。
 
 本地实验数据规模：订单表 **99,441** 行；已交付订单 **96,478** 笔；其中具备延期标签所需日期的已交付订单 **96,470** 笔，延期 **6,534** 笔（约 **6.77%**）。统计口径和筛选条件以相应 SQL 文件为准。
 
