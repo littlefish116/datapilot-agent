@@ -71,7 +71,6 @@ DataPilot/
 └── requirements.txt               # 项目直接依赖
 ```
 
-项目还保留了 `README_FIRST_ROUND.md` 作为早期阶段练习说明。
 
 ## 4. 数据来源与处理
 
