@@ -247,6 +247,22 @@ python -m pytest tests -v
 
 已完成九表数据导入、SQL 业务报表、特征与标签审计、LR/HGB 对照实验、Joblib 模型固化、FastAPI 服务、Agent 工具调用、多轮网页聊天和 **16 项自动化测试**。在独立的 Git 克隆副本中，已验证全新依赖环境、数据/SQL 重建、模型重建及本地服务启动。项目目前为可在本地演示的原型，并非生产系统。
 
----
+## 11. License
 
-**发布提醒**：公开仓库前应再次确认 `.gitignore` 排除 `.env`、原始 CSV、SQLite 数据库和 `.joblib` 模型文件；Web 访问截图应去掉实际密钥、私人路径及不应公开的数据。
+### Source Code
+
+The original source code in this project is licensed under the [MIT License](LICENSE), except where otherwise noted.
+
+Copyright © 2026 littlefish116.
+
+### Dataset
+
+This project uses the [Brazilian E-Commerce Public Dataset by Olist](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce), which is distributed under the **Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0)** license.
+
+The original Olist dataset is not redistributed in this repository. Users should obtain the dataset from its official source and comply with its licensing terms.
+
+The MIT License for this project's original source code does not supersede the license of the Olist dataset or other third-party materials.
+
+### Disclaimer
+
+DataPilot is developed for educational, research, and portfolio demonstration purposes. Its machine learning risk scores are not calibrated probabilities and should not be used for production business decisions.
