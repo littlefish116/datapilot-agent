@@ -80,7 +80,7 @@ DataPilot/
 
 本地实验数据规模：订单表 **99,441** 行；已交付订单 **96,478** 笔；其中具备延期标签所需日期的已交付订单 **96,470** 笔，延期 **6,534** 笔（约 **6.77%**）。统计口径和筛选条件以相应 SQL 文件为准。
 
-**原始数据不随仓库提交。** 获取 Olist 数据集后，应先查看 `scripts/config.py`，按照其中实际配置放置九份 CSV；原始数据存放路径尚需在全新环境中核验，不应仅凭本 README 假定任意目录都可用。
+**原始数据不随仓库提交。** 获取 Olist 数据集后，将九份原始 CSV 放入项目根目录的 `data/raw/`（已在独立克隆环境实际验证），保持原始文件名不变。具体文件与路径映射可查阅 `scripts/config.py`。
 
 ### 数据准备与离线重建
 
@@ -140,7 +140,7 @@ python scripts/12_save_model.py
 
 ## 6. 本地运行
 
-下列命令以 **Windows PowerShell** 为例；项目此前在 **Python 3.14.4** 下运行并通过 API 回归测试。其他 Python 版本和干净环境的兼容性仍需单独验证。
+下列命令以 **Windows PowerShell** 为例。项目已在 **Python 3.14.4** 的全新 Git 克隆副本和独立虚拟环境中完成依赖安装、原始数据审计、数据库及 SQL 结果重建、HGB-V1 重新训练、模型加载、FastAPI 本地启动。其他 Python 版本尚未系统验证。
 
 ### 创建虚拟环境、安装依赖
 
@@ -152,13 +152,21 @@ python -m pip install -r requirements.txt
 
 若 PowerShell 的执行策略阻止激活，可使用 `.venv\Scripts\python.exe` 直接运行后续命令。
 
-### 配置 DeepSeek
+### 配置 OpenAI 兼容 API
 
 ```powershell
 Copy-Item .env.example .env
 ```
 
-在 `.env` 文件内设置自己的 `DEEPSEEK_API_KEY`，并将 `DEEPSEEK_MODEL` 设置为你的 DeepSeek API 账号实际可用且支持工具调用的模型名称。**不要把密钥提交到 Git 仓库。**
+在 `.env` 内配置以下变量（示例以 DeepSeek 兼容接口为例）：
+
+```dotenv
+OPENAI_API_KEY=your_api_key_here
+OPENAI_MODEL=deepseek-chat
+OPENAI_BASE_URL=https://api.deepseek.com
+```
+
+`OPENAI_API_KEY` 是项目采用的统一环境变量名，**不代表密钥必须来自 OpenAI**；模型名称和 Base URL 应与实际服务商匹配。如果你的 `.env.example` 指定的是另一个已验证可用的模型名称，以你的实际账号可用型号为准。**不要将包含真实密钥的 `.env` 提交到 Git 仓库，也不要将服务端密钥放入前端代码。**
 
 ### 准备数据库与模型
 
@@ -200,7 +208,7 @@ python -m uvicorn app.main:app --reload
 }
 ```
 
-上述输入在已保存的 HGB-V1 模型上返回过 `risk_score: 0.025889`、`score_type: "uncalibrated_model_score"`。这**不表示**实际延期概率为 2.5889%。
+预测结果包含 `risk_score` 和 `score_type: "uncalibrated_model_score"`。具体分数由本地模型计算，**不能直接解释为实际延期概率**。
 
 **聊天接口示例**：
 
@@ -217,19 +225,15 @@ python -m uvicorn app.main:app --reload
 
 ## 8. 自动化测试
 
-```powershell
-python -m pytest tests/test_api.py -v
-```
-
-在已验证的本地环境中，API 测试结果为 **12 passed**：覆盖报表、模型输出回归、输入校验、模拟 Agent 会话与工具记录、API 异常、数据库不可用和模型缺失启动失败。测试使用真实本地 SQLite/模型文件，但**不会在模拟 Agent 测试中实际请求 DeepSeek API**。
-
-项目还包含 `tests/test_sql_metrics.py`。可尝试执行完整测试目录：
+在重建数据库与模型后，运行完整测试套件：
 
 ```powershell
 python -m pytest tests -v
 ```
 
-完整测试目录的结果需要另行验收，不能直接把前述 12 项结果当作全项目测试结果。
+**已验证结果：16 passed**（其中 API 测试 12 项、SQL 指标测试 4 项；原开发环境运行耗时约 4–5 秒）。测试覆盖报表、预测输入校验、模拟 Agent 会话与异常处理，以及 SQL JOIN 多对多放大和订单级延期率等关键口径。此前还出现 17 条 LangSmith 对 Python 3.14 弃用 API 的提示，不影响测试结论。
+
+自动化 Agent 测试使用模拟 Agent，**不会验证实际第三方 LLM 网络调用**。真实 API 请求和多轮追问需在运行中的 Web 界面另行测试。
 
 ## 9. 已知限制与后续方向
 
@@ -238,12 +242,12 @@ python -m pytest tests -v
 3. **评分尚未校准**：不要将 `risk_score` 当作真实概率，也不要自行设置未经验证的“高/低风险”等级。
 4. **会话非持久化**：当前使用进程内检查点；没有身份认证、持久化历史或跨进程同步。
 5. **工具范围受限**：只能查询预先定义的报表，不能任意查询数据库或通过订单号自动获取预测特征。
-6. **发布前待办**：验证全新环境重建、补充前端与端到端测试、设置认证/速率限制/调用预算与可观测性。
+6. **公开演示边界**：全新环境的数据/模型重建与 FastAPI 本地启动已经验证；尚未实现可供公网部署的认证、限流、密钥管理与调用预算控制，也未建立自动化的真实 LLM 端到端测试。
 
 ## 10. 项目状态
 
-已完成九表数据导入、SQL 业务报表、特征与标签审计、LR/HGB 对照实验、Joblib 模型固化、FastAPI 服务、DeepSeek Agent 工具调用、多轮网页聊天和 **12 项 API 自动化测试**。项目目前为可在本地演示的原型，并非已验证的生产系统。
+已完成九表数据导入、SQL 业务报表、特征与标签审计、LR/HGB 对照实验、Joblib 模型固化、FastAPI 服务、Agent 工具调用、多轮网页聊天和 **16 项自动化测试**。在独立的 Git 克隆副本中，已验证全新依赖环境、数据/SQL 重建、模型重建及本地服务启动。项目目前为可在本地演示的原型，并非生产系统。
 
 ---
 
-**复现提醒**：本 README 按现有目录列表与已完成实验记录编写。正式公开仓库前，请核对 `scripts/config.py` 的实际 CSV 路径、全新环境中的依赖安装、完整测试目录结果，以及 `.gitignore` 是否排除密钥与数据文件。
+**发布提醒**：公开仓库前应再次确认 `.gitignore` 排除 `.env`、原始 CSV、SQLite 数据库和 `.joblib` 模型文件；Web 访问截图应去掉实际密钥、私人路径及不应公开的数据。
