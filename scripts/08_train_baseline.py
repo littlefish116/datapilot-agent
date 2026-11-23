@@ -240,4 +240,3 @@ evaluate_threshold(
     test_prob,
     best_threshold
 )
-

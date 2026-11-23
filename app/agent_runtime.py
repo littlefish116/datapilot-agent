@@ -28,7 +28,10 @@ def build_agent():
     llm = ChatOpenAI(
         model=os.getenv("OPENAI_MODEL", "deepseek-chat"),
         api_key=api_key,
-        base_url="https://api.deepseek.com",
+        base_url=os.getenv(
+            "OPENAI_BASE_URL",
+            "https://api.deepseek.com"
+        ),
         temperature=0
     )
 
