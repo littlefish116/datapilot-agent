@@ -1,8 +1,44 @@
+
+# Python 虚拟环境
 .venv/
+venv/
+
+# Python 缓存
 __pycache__/
-*.pyc
+*.py[cod]
 .pytest_cache/
+.ruff_cache/
+
+# API Key 与本地环境
+.env
+.env.*
+!.env.example
+
+# IDE
+.idea/
+.vscode/
+
+# 原始数据
 data/raw/
-data/processed/
+
+# SQLite数据库
+data/processed/*.db
+data/processed/*.sqlite
+
+# 自动生成的报表
 reports/
-*.db
+
+# 训练后的模型
+models/*.joblib
+
+# 日志
+*.log
+logs/
+
+# 操作系统
+.DS_Store
+Thumbs.db
+
+requirements-lock.txt
+
+requirements-lock.txt

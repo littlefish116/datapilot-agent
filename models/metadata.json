@@ -1,0 +1,23 @@
+{
+  "model_name": "delivery_risk_hgb_v1",
+  "features": [
+    "purchase_month",
+    "purchase_weekday",
+    "item_count",
+    "item_value",
+    "customer_state"
+  ],
+  "positive_label": 1,
+  "train_samples": 68318,
+  "validation_samples": 11149,
+  "validation_ap": 0.05941379105380433,
+  "validation_roc_auc": 0.5592593827078194,
+  "sklearn_version": "1.9.1",
+  "prediction_point": "after_checkout",
+  "limitations": [
+    "Historical delivered-order dataset",
+    "Validation filtered by delivery maturity",
+    "Uncalibrated risk scores",
+    "Not validated for production deployment"
+  ]
+}
