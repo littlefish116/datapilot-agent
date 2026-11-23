@@ -25,15 +25,16 @@ load_dotenv(ROOT / ".env")
 
 if not os.getenv("OPENAI_API_KEY"):
     raise RuntimeError(
-        "没有找到DEEPSEEK_API_KEY，请检查.env文件"
+        "没有找到OPENAI_API_KEY，请检查.env文件"
     )
 
-
-# 1. 初始化大模型
 llm = ChatOpenAI(
-    model=os.getenv("OPENAI_MODEL", "deepseek-flash"),
+    model=os.getenv("OPENAI_MODEL", "deepseek-chat"),
     api_key=os.getenv("OPENAI_API_KEY"),
-    base_url="https://api.deepseek.com",
+    base_url=os.getenv(
+        "OPENAI_BASE_URL",
+        "https://api.deepseek.com"
+    ),
     temperature=0
 )
 
