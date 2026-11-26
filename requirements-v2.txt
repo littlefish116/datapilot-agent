@@ -1,0 +1,2 @@
+# Stage 2 only. Keep the V1 requirements.txt unchanged until this module is accepted.
+sqlglot==30.34.0
