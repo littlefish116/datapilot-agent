@@ -1,0 +1,100 @@
+{
+  "version": "v1.0",
+  "scope": "Olist SQLite，明确订单、订单商品、支付与客户的统计粒度；目前是评测口径，不代表已实施Text-to-SQL动态查询。",
+  "table_relationships": [
+    {
+      "left": "orders",
+      "right": "customers",
+      "keys": "orders.customer_id = customers.customer_id",
+      "cardinality": "many_to_one",
+      "warning": "customer_id非跨订单买家标识；跨订单买家需customer_unique_id"
+    },
+    {
+      "left": "orders",
+      "right": "order_items",
+      "keys": "orders.order_id = order_items.order_id",
+      "cardinality": "one_to_many",
+      "warning": "JOIN后COUNT(*)和SUM金额会改变粒度"
+    },
+    {
+      "left": "orders",
+      "right": "order_payments",
+      "keys": "orders.order_id = order_payments.order_id",
+      "cardinality": "one_to_many",
+      "warning": "同一订单可有多次支付；禁止直接与明细同时JOIN后SUM(price)"
+    },
+    {
+      "left": "order_items",
+      "right": "products",
+      "keys": "order_items.product_id = products.product_id",
+      "cardinality": "many_to_one",
+      "warning": "类别名需要映射至category_translation"
+    },
+    {
+      "left": "order_items",
+      "right": "sellers",
+      "keys": "order_items.seller_id = sellers.seller_id",
+      "cardinality": "many_to_one",
+      "warning": "一笔订单可能涉及多个卖家，按卖家州统计不能简单相加为全局独立订单数"
+    },
+    {
+      "left": "geolocation",
+      "right": "customers",
+      "keys": "geolocation_zip_code_prefix = customer_zip_code_prefix",
+      "cardinality": "many_to_many_possible",
+      "warning": "邮编前缀多行，关联前先对地理表按邮编汇总/去重"
+    }
+  ],
+  "business_metrics": [
+    {
+      "id": "delivered_orders",
+      "grain": "order_id",
+      "definition": "order_status = delivered 的唯一订单数",
+      "sql_example": "COUNT(DISTINCT o.order_id)",
+      "limitations": "日期字段为空不影响订单交付状态计数"
+    },
+    {
+      "id": "late_delivery_rate_pct",
+      "grain": "order_id",
+      "definition": "已交付且实际与预计送达日期均存在的订单中，实际送达日 > 预计送达日 的比例×100",
+      "sql_example": "100.0 * AVG(DATE(actual_date) > DATE(estimated_date))",
+      "limitations": "时间按日期比较而非精确时分秒；按购买月分组需要购买时间非空"
+    },
+    {
+      "id": "delivered_item_value_brl",
+      "grain": "order_item",
+      "definition": "已交付订单下 order_items.price 之和，不含 freight_value",
+      "sql_example": "SUM(i.price)",
+      "limitations": "不能视为实收现金、净收入或利润；JOIN payments前预聚合"
+    },
+    {
+      "id": "payment_amount_brl",
+      "grain": "payment_row",
+      "definition": "订单支付记录的payment_value之和",
+      "sql_example": "SUM(p.payment_value)",
+      "limitations": "不能直接与order_items同时JOIN汇总，会产生乘法膨胀"
+    },
+    {
+      "id": "average_items_per_order",
+      "grain": "order_id",
+      "definition": "对每笔订单先COUNT(order_item_id)，然后对订单求AVG",
+      "sql_example": "AVG(item_count)",
+      "limitations": "不能对订单表与支付表联表后的行直接AVG"
+    },
+    {
+      "id": "repeat_buyer_count",
+      "grain": "customer_unique_id",
+      "definition": "去重买家拥有至少2笔订单的人数",
+      "sql_example": "COUNT(DISTINCT customer_unique_id) WHERE order_count>=2",
+      "limitations": "customer_id不是跨订单重复购买的身份键"
+    }
+  ],
+  "security_policy": {
+    "query_execution": "现阶段评测只使用人工编写的静态参考SQL，本模块不执行模型生成的SQL",
+    "v2_plan": "将来由SQL AST白名单+只读连接+SQLite authorizer/progress handler约束，并为输出结果设定大小限制",
+    "restricted_examples": [
+      "DROP/DELETE/UPDATE语句",
+      "导出客户全量明细"
+    ]
+  }
+}

@@ -1,0 +1,25 @@
+name: DataPilot V1 Benchmark Checks
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+permissions:
+  contents: read
+
+jobs:
+  benchmark-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+      - name: Validate benchmark definitions (offline)
+        run: python -m evaluation.v1_runner --mode validate
+      - name: Run benchmark unit tests (offline)
+        run: python -m unittest discover -s tests -p "test_agent_benchmark.py" -v
