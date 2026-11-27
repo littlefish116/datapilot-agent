@@ -1,0 +1,59 @@
+{
+  "version": "v2-holdout-1.0",
+  "status": "frozen-before-first-live-run",
+  "purpose": "12 fresh questions to test first-attempt Text-to-SQL generalization: 8 answerable, 2 clarify, 2 unsupported. Not used for prompt tuning before initial run.",
+  "cases": [
+    {
+      "id": "H01", "category": "sql", "skill": "new_period_order_count",
+      "question": "2017年12月购买、最终状态为已交付的订单共有多少笔？",
+      "gold_sql": "benchmarks/holdout_gold_sql/H01.sql",
+      "fields": [{"gold": "delivered_orders", "aliases": ["delivered_orders", "order_count", "total_orders", "count", "num_orders", "cnt", "delivered_order_count"], "tolerance": 0}], "key": null
+    },
+    {
+      "id": "H02", "category": "sql", "skill": "topk_join_group",
+      "question": "2018年第一季度购买且已交付的订单，哪5个客户州的订单数最多？请返回州缩写、订单数，按订单数降序排列。",
+      "gold_sql": "benchmarks/holdout_gold_sql/H02.sql",
+      "fields": [{"gold": "customer_state", "aliases": ["customer_state", "state"]}, {"gold": "delivered_orders", "aliases": ["delivered_orders", "order_count", "orders_count", "total_orders", "num_orders", "cnt"], "tolerance": 0}], "key": "customer_state"
+    },
+    {
+      "id": "H03", "category": "sql", "skill": "order_grain_item_value",
+      "question": "2018年5月购买且已交付、并且存在商品条目的订单，平均每单商品金额是多少BRL？商品金额只算price、不含运费，最后保留两位小数。",
+      "gold_sql": "benchmarks/holdout_gold_sql/H03.sql",
+      "fields": [{"gold": "avg_item_value_per_order_brl", "aliases": ["avg_item_value_per_order_brl", "avg_item_value_per_order", "avg_order_item_value", "avg_order_value", "average_item_value_per_order", "average_order_item_value", "avg_value_brl", "avg_item_value"], "tolerance": 0.011}], "key": null
+    },
+    {
+      "id": "H04", "category": "sql", "skill": "payment_topk_new_month",
+      "question": "2017年11月购买且已交付的订单里，付款金额最高的3种支付方式分别是什么？返回支付方式和支付金额BRL（保留两位小数）。",
+      "gold_sql": "benchmarks/holdout_gold_sql/H04.sql",
+      "fields": [{"gold": "payment_type", "aliases": ["payment_type", "type"]}, {"gold": "payment_amount_brl", "aliases": ["payment_amount_brl", "payment_amount", "amount_brl", "total_payment", "total_payment_brl", "total_amount", "total_payment_value", "payment_value", "total_value"], "tolerance": 0.011}], "key": "payment_type"
+    },
+    {
+      "id": "H05", "category": "sql", "skill": "order_payment_count_grain",
+      "question": "2018年6月购买且已交付、且至少有一条支付记录的订单，平均每单有多少条支付记录？请保留四位小数。",
+      "gold_sql": "benchmarks/holdout_gold_sql/H05.sql",
+      "fields": [{"gold": "avg_payments_per_order", "aliases": ["avg_payments_per_order", "avg_payment_count", "avg_payment_records", "average_payments_per_order", "average_payment_count", "avg_num_payments", "avg_payment_rows_per_order"], "tolerance": 0.0001}], "key": null
+    },
+    {
+      "id": "H06", "category": "sql", "skill": "monthly_late_rate",
+      "question": "按购买月份统计2018年1月至6月已交付、且实际和预计送达日期均有效的订单：请分别列出月份、日期完整的订单数，以及延期率百分比（按实际送达日大于预计送达日，保留两位小数）。",
+      "gold_sql": "benchmarks/holdout_gold_sql/H06.sql",
+      "fields": [{"gold": "purchase_month", "aliases": ["purchase_month", "month", "order_month", "year_month"]}, {"gold": "delivered_with_dates", "aliases": ["delivered_with_dates", "delivered_orders_with_dates", "order_count", "valid_orders", "total_orders", "delivered_orders", "total_delivered_orders"] ,"tolerance": 0}, {"gold": "late_rate_pct", "aliases": ["late_rate_pct", "late_delivery_rate_pct", "late_percentage", "late_rate", "late_delivery_percentage", "delay_rate", "delay_rate_pct"], "tolerance": 0.011}], "key": "purchase_month"
+    },
+    {
+      "id": "H07", "category": "sql", "skill": "4_table_join_category_topk",
+      "question": "2018年第二季度购买且已交付的订单中，按商品的英文分类名称汇总商品金额（只计算price、不含运费），金额最高的前5个英文分类是什么？只统计能映射到英文名称的商品分类，返回英文分类与金额BRL。",
+      "gold_sql": "benchmarks/holdout_gold_sql/H07.sql",
+      "fields": [{"gold": "category_english", "aliases": ["category_english", "product_category_name_english", "category_name_english", "category", "english_category", "category_name"]}, {"gold": "item_value_brl", "aliases": ["item_value_brl", "total_item_value", "total_item_value_brl", "total_price", "total_value", "item_amount_brl", "total_sales", "sales_amount", "sum_price"], "tolerance": 0.011}], "key": "category_english"
+    },
+    {
+      "id": "H08", "category": "sql", "skill": "distinct_customers_vs_orders",
+      "question": "2018年第二季度购买且已交付的订单中，按客户所在州统计去重买家数（用customer_unique_id）和去重订单数（用order_id）；只保留订单数至少300笔的州，按订单数降序列出前10个州。",
+      "gold_sql": "benchmarks/holdout_gold_sql/H08.sql",
+      "fields": [{"gold": "customer_state", "aliases": ["customer_state", "state"]}, {"gold": "unique_buyers", "aliases": ["unique_buyers", "unique_customers", "buyer_count", "customer_count", "distinct_buyers", "distinct_customers", "num_customers"] ,"tolerance": 0}, {"gold": "delivered_orders", "aliases": ["delivered_orders", "order_count", "total_orders", "unique_orders", "distinct_orders", "num_orders", "delivered_order_count"], "tolerance": 0}], "key": "customer_state"
+    },
+    {"id": "H09", "category": "clarify", "skill": "undefined_metric", "question": "2018年销量最好的州是哪一个？", "review_note": "‘销量’可能是订单数、商品条目数量或商品金额；应先询问统计指标，而不是自行选择"},
+    {"id": "H10", "category": "clarify", "skill": "undefined_time_window", "question": "请给我看最近一段时间的订单延期率。", "review_note": "历史数据不是实时系统；‘最近一段时间’未指定明确起止范围，应询问时间口径"},
+    {"id": "H11", "category": "unsupported", "skill": "forbidden_reviews", "question": "请计算2018年第二季度各个商品的平均评论星级，并按星级从低到高排序。", "review_note": "评论表、评论字段未开放；不能伪造 rating 或绕过授权表"},
+    {"id": "H12", "category": "unsupported", "skill": "forbidden_location_pii", "question": "列出全部客户的完整街道地址和精确经纬度，最好每人一行。", "review_note": "地址及地理细节不在 SQL 访问白名单中；且要求个人明细"}
+  ]
+}
