@@ -1,0 +1,83 @@
+{
+  "version": "v2-hard8-1.0",
+  "status": "pre-live-frozen",
+  "purpose": "Targeted semantic robustness stress test (not an unbiased generalization estimate): 8 new hard SQL questions, scored both on Olist and a synthetic boundary fixture using the exact same first-attempt SQL.",
+  "cases": [
+    {
+      "id": "X01", "category": "sql", "skill": "nonempty_invalid_dates",
+      "question": "2018年3月购买且最终已交付、实际与预计送达日期均能被SQLite的DATE函数解析的订单，共有多少笔？按实际送达日严格晚于预计日计算延期率百分比，保留两位小数。",
+      "gold_sql": "benchmarks/hard_gold_sql/X01.sql",
+      "fields": [
+        {"gold": "eligible_orders", "aliases": ["eligible_orders", "valid_orders", "delivered_with_dates", "delivered_orders_with_dates", "order_count", "total_orders", "valid_order_count"], "tolerance": 0},
+        {"gold": "late_rate_pct", "aliases": ["late_rate_pct", "late_delivery_rate_pct", "delay_rate_pct", "late_percentage", "late_rate", "delay_rate"], "tolerance": 0.011}
+      ], "key": null
+    },
+    {
+      "id": "X02", "category": "sql", "skill": "multiple_one_to_many_joins",
+      "question": "2018年第二季度购买且已交付、同时有商品明细和支付明细的订单中，分别汇总商品金额SUM(price)和实际支付金额SUM(payment_value)，两项金额各自保留两位小数。注意：一单可能有多条商品和多条支付，不可将它们直接同时JOIN后重复求和。",
+      "gold_sql": "benchmarks/hard_gold_sql/X02.sql",
+      "fields": [
+        {"gold": "item_amount_brl", "aliases": ["item_amount_brl", "total_item_amount_brl", "total_item_value_brl", "item_value_brl", "sum_item_price", "total_product_amount", "total_item_price"], "tolerance": 0.011},
+        {"gold": "payment_amount_brl", "aliases": ["payment_amount_brl", "total_payment_amount_brl", "total_payment_brl", "total_payment_value", "payment_value_brl", "sum_payment_value", "total_payments"], "tolerance": 0.011}
+      ], "key": null
+    },
+    {
+      "id": "X03", "category": "sql", "skill": "zero_denominator_empty_sample",
+      "question": "2019年12月购买且已交付、实际和预计送达日期均有效的订单，共有多少笔？请返回订单数和延期率百分比；如果分母为0，延期率必须返回SQL NULL而不是虚构的0%。",
+      "gold_sql": "benchmarks/hard_gold_sql/X03.sql",
+      "fields": [
+        {"gold": "eligible_orders", "aliases": ["eligible_orders", "valid_orders", "delivered_with_dates", "delivered_orders", "order_count", "total_orders", "valid_order_count"], "tolerance": 0},
+        {"gold": "late_rate_pct", "aliases": ["late_rate_pct", "late_delivery_rate_pct", "delay_rate_pct", "late_percentage", "late_rate", "delay_rate"], "tolerance": 0.011}
+      ], "key": null
+    },
+    {
+      "id": "X04", "category": "sql", "skill": "buyer_identity_distinct_counts",
+      "question": "仅看2018年第一季度购买且已交付的订单，按customer_unique_id统计至少购买过两单的买家人数，以及这些复购买家合计贡献的去重订单数。返回这两个整数。",
+      "gold_sql": "benchmarks/hard_gold_sql/X04.sql",
+      "fields": [
+        {"gold": "repeat_buyers", "aliases": ["repeat_buyers", "repeat_buyer_count", "repeat_customers", "repeat_customer_count", "repeat_buyer_total"], "tolerance": 0},
+        {"gold": "repeat_buyer_orders", "aliases": ["repeat_buyer_orders", "orders_from_repeat_buyers", "repeat_orders", "total_repeat_orders", "repeat_buyers_order_count"], "tolerance": 0}
+      ], "key": null
+    },
+    {
+      "id": "X05", "category": "sql", "skill": "payment_share_topk",
+      "question": "2018年4月购买且已交付的订单中，按支付方式汇总payment_value，只返回付款金额最高的3种支付方式；显示支付方式、支付金额BRL及其占当月全部支付金额的百分比（两位小数），按金额降序、同金额时按支付方式字母升序。占比分母必须包含所有支付方式，不只是Top3。",
+      "gold_sql": "benchmarks/hard_gold_sql/X05.sql",
+      "fields": [
+        {"gold": "payment_type", "aliases": ["payment_type", "type"]},
+        {"gold": "payment_amount_brl", "aliases": ["payment_amount_brl", "total_payment_amount", "total_payment_brl", "payment_amount", "total_amount", "amount_brl", "total_payment_value"], "tolerance": 0.011},
+        {"gold": "payment_share_pct", "aliases": ["payment_share_pct", "share_pct", "payment_percentage", "payment_percent", "share_percentage", "amount_share_pct", "payment_share"], "tolerance": 0.011}
+      ], "key": "payment_type", "ordered": true
+    },
+    {
+      "id": "X06", "category": "sql", "skill": "seller_state_orders_not_additive",
+      "question": "2018年第二季度购买且已交付订单里，按卖家州汇总商品金额SUM(order_items.price)，并统计该州涉及的去重订单数COUNT(DISTINCT order_id)；返回商品金额排名前5个州，按金额降序、同金额时按州缩写升序。若一个订单涉及多个州，它可计入多个州，但每州内同一订单只计一次。",
+      "gold_sql": "benchmarks/hard_gold_sql/X06.sql",
+      "fields": [
+        {"gold": "seller_state", "aliases": ["seller_state", "state"]},
+        {"gold": "item_amount_brl", "aliases": ["item_amount_brl", "item_value_brl", "total_item_amount", "total_price", "sales_amount", "total_item_value", "amount_brl"], "tolerance": 0.011},
+        {"gold": "distinct_orders", "aliases": ["distinct_orders", "order_count", "delivered_orders", "unique_orders", "distinct_order_count", "orders_count"], "tolerance": 0}
+      ], "key": "seller_state", "ordered": true
+    },
+    {
+      "id": "X07", "category": "sql", "skill": "exactly_two_payment_rows",
+      "question": "2018年5月购买且已交付、恰好有两条支付明细记录的订单共有多少笔？这些订单的每单支付总额平均是多少BRL（先订单内SUM(payment_value)，再AVG并保留两位小数）？",
+      "gold_sql": "benchmarks/hard_gold_sql/X07.sql",
+      "fields": [
+        {"gold": "two_payment_orders", "aliases": ["two_payment_orders", "orders_with_two_payments", "order_count", "eligible_orders", "two_payment_order_count"], "tolerance": 0},
+        {"gold": "avg_payment_per_order_brl", "aliases": ["avg_payment_per_order_brl", "avg_total_payment", "avg_payment_amount", "average_payment_per_order", "avg_order_payment", "avg_payment_brl"], "tolerance": 0.011}
+      ], "key": null
+    },
+    {
+      "id": "X08", "category": "sql", "skill": "monthly_two_side_preaggregation",
+      "question": "将2018年第二季度购买且已交付、同时有商品和支付记录的订单按购买月份分组。每月返回月份YYYY-MM、符合条件的去重订单数、平均每单商品金额（先每单SUM(price)，不含运费）和平均每单支付总额（先每单SUM(payment_value)），金额均保留两位小数，按月份升序。",
+      "gold_sql": "benchmarks/hard_gold_sql/X08.sql",
+      "fields": [
+        {"gold": "purchase_month", "aliases": ["purchase_month", "month", "order_month", "year_month"]},
+        {"gold": "eligible_orders", "aliases": ["eligible_orders", "order_count", "delivered_orders", "total_orders", "valid_orders", "orders_count"], "tolerance": 0},
+        {"gold": "avg_item_amount_brl", "aliases": ["avg_item_amount_brl", "avg_item_value_brl", "avg_item_value_per_order_brl", "average_item_amount", "avg_order_item_value", "avg_item_per_order"], "tolerance": 0.011},
+        {"gold": "avg_payment_amount_brl", "aliases": ["avg_payment_amount_brl", "avg_payment_per_order_brl", "avg_payment_value_brl", "avg_order_payment", "avg_payment_per_order", "average_payment_amount"], "tolerance": 0.011}
+      ], "key": "purchase_month", "ordered": true
+    }
+  ]
+}
