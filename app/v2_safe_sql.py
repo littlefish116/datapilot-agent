@@ -117,15 +117,27 @@ def validate_sql(sql: str, limits: SqlLimits | None = None) -> str:
         if name not in allowed_names or name in {"rowid", "oid", "_rowid_"}:
             _fails("forbidden_column", "SQL 引用了未开放的字段")
 
-    def is_inside_count(column: exp.Column, boundary: exp.Expression) -> bool:
-        node = column.parent
-        while node is not None:
-            if isinstance(node, exp.Count):
-                return True
-            if node is boundary:
-                return False
-            node = node.parent
-        return False
+    def projected_value_columns(node: exp.Expression):
+        """Columns contributing to a SELECT *output value*, not its row selection.
+
+        SQLGlot.find_all(Column) on a projected scalar subquery also visits its
+        JOIN/WHERE columns. Those keys constrain rows but are not necessarily
+        returned (for example a correlated denominator in payment share SQL).
+        For nested SELECTs, descend only through their projection list.
+        COUNT identifiers are allowed as an aggregate, not as a raw ID value.
+        This is intentionally conservative and not full data-lineage analysis.
+        """
+        if isinstance(node, exp.Select):
+            for projection in node.expressions:
+                yield from projected_value_columns(projection)
+            return
+        if isinstance(node, exp.Count):
+            return
+        if isinstance(node, exp.Column):
+            yield node
+            return
+        for child in node.iter_expressions():
+            yield from projected_value_columns(child)
 
     # Track simple alias propagation of sensitive identifiers across CTEs.
     # This is deliberately conservative, not a full SQL data-lineage solution.
@@ -136,13 +148,12 @@ def validate_sql(sql: str, limits: SqlLimits | None = None) -> str:
         for alias in alias_expressions:
             if not alias.alias:
                 continue
-            for c in alias.this.find_all(exp.Column):
+            for c in projected_value_columns(alias.this):
                 if c.name.lower() not in tainted:
                     continue
-                if not is_inside_count(c, alias.this):
-                    if alias.alias.lower() not in tainted:
-                        tainted.add(alias.alias.lower())
-                        changed = True
+                if alias.alias.lower() not in tainted:
+                    tainted.add(alias.alias.lower())
+                    changed = True
         if not changed:
             break
 
@@ -151,10 +162,9 @@ def validate_sql(sql: str, limits: SqlLimits | None = None) -> str:
     # guarantees from this limited check; local analytics only.
     for projection in tree.expressions:
         expr = projection.this if isinstance(projection, exp.Alias) else projection
-        for col in expr.find_all(exp.Column):
+        for col in projected_value_columns(expr):
             if col.name.lower() in tainted:
-                if not is_inside_count(col, expr):
-                    _fails("unsafe_sql", "不允许在最终结果直接返回原始业务标识符")
+                _fails("unsafe_sql", "不允许在最终结果直接返回原始业务标识符")
 
     try:
         return tree.sql(dialect="sqlite")
