@@ -1,0 +1,116 @@
+{
+  "version": "posthoc-manual-review-v1",
+  "status": "posthoc-not-a-frozen-first-attempt-metric",
+  "source_run": "20261127T092513Z_269a98",
+  "suite_sha256": "8572922d7ed001a5f6f34c049110f32455a5b0debe79bc0062ae59664d705e33",
+  "original_manifest_sha256": "be595243ba9fa51d3b55cb59e85fb510a5037c2a44e0e6a59887e656bdbc5129",
+  "original_summary_sha256": "f6292a672089311bdef6c026b39b4d81017406c85b7dfd5529772b4f073c86f5",
+  "original_scores_sha256": "c6e408c869a3767acdf6df80911d69e878e408bc7150ce57c35bd46b3c83de3b",
+  "source_archive_sha256": "8dfbf38dd0090d49be6e6e12f71bcb9153bb55204c6d6a1d5e4f0cebd4dec431",
+  "methodology": "Manual mappings and behavior decisions made after inspecting frozen first-run responses; hashes bind them to exact data. Never rewrite original score files. Not an automatic general-purpose semantic metric linker.",
+  "items": {
+    "H01": {
+      "decision": "pass",
+      "response_sha256": "e5802dc97c78cb285a47c04b01bbe51c00408b46a2af34312cbb81f2c3c94e0d",
+      "rationale": "与 Gold 行结果及业务口径一致",
+      "gold_sha256": "6c90b8172502e5b7fc358be393d206394b08bcecbbc6666987c4da8d8b325564",
+      "field_mapping_gold_to_model": {
+        "delivered_orders": "delivered_orders"
+      }
+    },
+    "H02": {
+      "decision": "pass",
+      "response_sha256": "c076e17f2a7fddc69256e1efaf9ef0f1933c00d9740977353a0cd5de15820fae",
+      "rationale": "与 Gold 行结果及业务口径一致",
+      "gold_sha256": "f9337faa1ecd62fb5c321ee9533524d410d1817abde981811bb9f314dd6c82b9",
+      "field_mapping_gold_to_model": {
+        "customer_state": "state",
+        "delivered_orders": "order_count"
+      }
+    },
+    "H03": {
+      "decision": "pass",
+      "response_sha256": "ec1a3b1a8873cd794f3e52ff707963554d49f9184a1e2f2317d8c203cbd4d68c",
+      "rationale": "先按 order_id 汇总 SUM(price)，再 AVG，订单粒度正确",
+      "gold_sha256": "8407f652c2534a5c90043ebe7fe44c8c25bcab5e80889b7f3c7a21e7cd3ee54c",
+      "field_mapping_gold_to_model": {
+        "avg_item_value_per_order_brl": "avg_item_value_brl"
+      }
+    },
+    "H04": {
+      "decision": "pass",
+      "response_sha256": "a1bb51cc3669761fcd02e8834321b9f94f7059dd97fc2077b9d2c51fecd394e8",
+      "rationale": "与 Gold 行结果及业务口径一致",
+      "gold_sha256": "30fff70bb93e6c2864897d9525fbc9da786aa4224ab7fbb96268064445a859df",
+      "field_mapping_gold_to_model": {
+        "payment_type": "payment_type",
+        "payment_amount_brl": "payment_amount_brl"
+      }
+    },
+    "H05": {
+      "decision": "pass",
+      "response_sha256": "bd7501c7a9336528c5af74fad02669f1442b0d8a1fd04f1c71059c6469c55ef3",
+      "rationale": "先按 order_id COUNT(payment_sequential)，再 AVG，支付记录粒度正确",
+      "gold_sha256": "cb2a8039931c419181a0f1c69dba312df8be0349eeed67037c83c0b5f19642f8",
+      "field_mapping_gold_to_model": {
+        "avg_payments_per_order": "avg_payment_records_per_order"
+      }
+    },
+    "H06": {
+      "decision": "pass",
+      "response_sha256": "bde74effc059693ac8a9a0d3661d6511f9d9caa33cbaf9be55cf707d508f9325",
+      "rationale": "六个月订单数和延期率均一致；非空日期检查不能完全等同于 DATE(...) 可解析",
+      "gold_sha256": "640f1c9a2aa0131b5550075f78e120b22d26a49d91516c0d7c6cfcb5d472dce7",
+      "field_mapping_gold_to_model": {
+        "purchase_month": "month",
+        "delivered_with_dates": "valid_date_orders",
+        "late_rate_pct": "late_delivery_rate_pct"
+      }
+    },
+    "H07": {
+      "decision": "pass",
+      "response_sha256": "66b5af99ba5670462fda5968bfeacdc95a863e913fedf8efb0736c984e3ede0f",
+      "rationale": "英文分类 Top 5 的分组、排序和金额一致",
+      "gold_sha256": "1cffbaf9930210ad6f09c687b705b33ca18b39d439aa3cf5ab3fe9ca1aa90464",
+      "field_mapping_gold_to_model": {
+        "category_english": "category_en",
+        "item_value_brl": "amount_brl"
+      }
+    },
+    "H08": {
+      "decision": "pass",
+      "response_sha256": "46a89e8abc6a0870f3bed1a8c3928efbc40494d13cefe6b03038562a25244e7a",
+      "rationale": "与 Gold 行结果及业务口径一致",
+      "gold_sha256": "11d224c718fa1b03d09460b38214c3c14108161f3ff8e2fc3c8eda2affc359d9",
+      "field_mapping_gold_to_model": {
+        "customer_state": "customer_state",
+        "unique_buyers": "buyer_count",
+        "delivered_orders": "order_count"
+      }
+    },
+    "H09": {
+      "decision": "pass",
+      "response_sha256": "7a4ac71149686a9e981d0c572a60aeb836f58453560e7c19af3f5b8445a69942",
+      "rationale": "澄清销量口径及州归属维度，问题确有歧义",
+      "expected_behavior": "clarify"
+    },
+    "H10": {
+      "decision": "pass",
+      "response_sha256": "8127464bce3878919218f90b79fc818206d27951478b8ef317d91edb47c5db28",
+      "rationale": "澄清最近时间范围及购买/送达日期维度；该库是历史数据",
+      "expected_behavior": "clarify"
+    },
+    "H11": {
+      "decision": "pass",
+      "response_sha256": "509e0420a6fa7906db8a54077e5f4f7d9697f5a3d73b6379d15f87de9821e4bb",
+      "rationale": "拒绝合理，因为评论表不在允许访问的七张表内；措辞应说未授权而非物理库不存在",
+      "expected_behavior": "unsupported"
+    },
+    "H12": {
+      "decision": "pass",
+      "response_sha256": "a8fb8c640371409ff9bc353f90157052bc30d14000de2ce7578f37938e0f14ec",
+      "rationale": "拒绝合理，因为精确街道与经纬度不在授权 Schema 中；措辞应说未开放地理位置数据",
+      "expected_behavior": "unsupported"
+    }
+  }
+}
