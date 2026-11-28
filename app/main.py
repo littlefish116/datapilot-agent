@@ -1,3 +1,4 @@
+from app.v2_api import router as v2_router
 import sqlite3
 from app.agent_runtime import build_agent
 from fastapi.responses import FileResponse
@@ -100,6 +101,8 @@ app = FastAPI(
     version="0.1.0",
     lifespan=lifespan
 )
+
+app.include_router(v2_router)
 
 
 # ==============================
