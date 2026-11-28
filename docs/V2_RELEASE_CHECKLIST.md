@@ -2,7 +2,7 @@
 
 不在完成下列检查之前创建 `v2.0.0` 标签。
 
-- [x] API、SQL 安全、生成、前端和 V1 整体回归：176 passed + 48 subtests passed（用户本地 2026-11-28）
+- [x] API、SQL 安全、生成、前端和 V1 整体回归：190 passed + 48 subtests passed（用户本地 2026-11-28）
 - [x] 首次实际 V2 查询：7003 笔；模糊问题澄清；评论评分查询受限；前端 Top-5 正常返回
 - [x] 保留 Holdout/Hard8 原始日志，人工审计和受控恢复独立记载
 - [ ] **补齐 `requirements.txt` 中 `sqlglot` 精确版本**：运行 `python scripts/pin_v2_sqlglot.py`，自动将当前安装版本固定为 `sqlglot==对应版本`；再运行 `python scripts/check_v2_release.py`

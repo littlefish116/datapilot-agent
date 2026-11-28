@@ -12,7 +12,7 @@
 
 ## 已完成验证（2026-11-28）
 
-- 全项目 `python -m pytest tests -q`：**176 passed, 48 subtests passed, 17 warnings**（LangSmith `asyncio.iscoroutinefunction` 弃用警告）。
+- 全项目 `python -m pytest tests -q`：**190 passed, 48 subtests passed, 17 warnings**（LangSmith `asyncio.iscoroutinefunction` 弃用警告）。
 - V2 浏览器实测：已交付订单查询返回 7,003；模糊“哪个州的销售表现最好”请求澄清；未开放评论数据请求返回不支持；多表聚合 Top-5 正常返回，但该次结果**尚未逐项与 Gold 独立核对**。
 - API 单测中风险拦截与检查器故障时停止执行路径通过。真实浏览器各异常状态的完全手工覆盖尚未全部证明。
 

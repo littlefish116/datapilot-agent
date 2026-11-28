@@ -21,7 +21,7 @@ DataPilot 是一个端到端的数据科学与 AI Agent 实践项目：将 Olist
   ```
 
   浏览器访问 `http://127.0.0.1:8000/v2`；V1 仍在 `http://127.0.0.1:8000/`。每次 V2 查询可能产生模型 API 费用。
-- **当前综合回归**：2026-11-28 本地 `python -m pytest tests -q`：176 passed、48 subtests passed、17 条 LangSmith 弃用警告（非失败）。
+- **当前综合回归**：2026-11-28 本地 `python -m pytest tests -q`：190 passed、48 subtests passed、17 条 LangSmith 弃用警告（非失败）。
 - **研究结果**：Holdout 12 自动 4/8 SQL、人工审计 8/8 SQL；Hard8 自动 2/8 双数据库、后验人工审计 7/8；X08 原始执行超出 500 万 VM 指令预算，人工过滤下推候选在原预算内通过；X03 另有日期有效性边界失败。完整口径见 `docs/V2_RELEASE_NOTES.md`。
 - **后续 V3**：将 V2 Text-to-SQL 与已有预测模型统一为多工具 Agent，增加多轮上下文和受控 SQL 自动修复（V2 未实现）。
 
