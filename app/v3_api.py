@@ -66,7 +66,11 @@ def v3_chat(payload: V3ChatRequest, request: Request):
         backend = DeepSeekSQLBackend()
     except Exception:
         raise HTTPException(status_code=503, detail="V3 路由模型尚未正确配置") from None
-    service = V3ToolService(model=model, metadata=metadata, sql_backend=backend)
+    allow_repair = os.getenv("DATAPILOT_V3_SQL_REPAIR_ENABLED", "0").strip().lower() in {"1", "true", "yes"}
+    service = V3ToolService(
+        model=model, metadata=metadata, sql_backend=backend,
+        allow_sql_repair=allow_repair,
+    )
     try:
         response = run_v3_conversation_turn(
             payload.question, store=_get_sessions(request),

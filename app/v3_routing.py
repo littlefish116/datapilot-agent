@@ -202,7 +202,9 @@ def build_v3_graph(*, backend: Any, service: Any):
             "selected_tool": tool, "used_tools": [tool],
             "answer": (focused_answer if focused_answer is not None
                        else _answer_from_result(result)), "tool_result": result,
-            "route_usage": usage, "automatic_repair": False,
+            "route_usage": usage,
+            "automatic_repair": (result["status"] in {"ok", "partial"}
+                                 and result.get("evidence", {}).get("automatic_repair") is True),
         }}
 
     graph = StateGraph(V3State)

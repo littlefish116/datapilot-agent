@@ -59,13 +59,15 @@ class V3ToolService:
                  model: Any = None,
                  metadata: Mapping[str, Any] | None = None,
                  sql_runner: Callable[..., dict] | None = None,
-                 report_runner: Callable[[str], dict] | None = None):
+                 report_runner: Callable[[str], dict] | None = None,
+                 allow_sql_repair: bool = False):
         self.db_path = Path(db_path)
         self.sql_backend = sql_backend
         self.model = model
         self.metadata = metadata
         self._sql_runner = sql_runner or run_v2_query
         self._report_runner = report_runner or existing_report_runner
+        self.allow_sql_repair = bool(allow_sql_repair)
 
     def sql_analysis(self, question: str) -> dict:
         """One generation + V2 validation / risk gate / safe execution."""
@@ -77,7 +79,14 @@ class V3ToolService:
         if self.sql_backend is None:
             return _failure(tool, "sql_backend_unavailable", "SQL 生成模型尚未配置")
         try:
-            raw = self._sql_runner(question.strip(), self.db_path, backend=self.sql_backend)
+            if self.allow_sql_repair:
+                from app.v3_sql_recovery import run_v3_sql_recovery
+                raw = run_v3_sql_recovery(
+                    question.strip(), self.db_path, backend=self.sql_backend,
+                    runner=self._sql_runner,
+                )
+            else:
+                raw = self._sql_runner(question.strip(), self.db_path, backend=self.sql_backend)
         except Exception:
             return _failure(tool, "sql_service_error", "SQL 查询服务异常")
         if not isinstance(raw, dict) or raw.get("status") not in ALLOWED_STATUSES:
@@ -91,7 +100,8 @@ class V3ToolService:
             "risk_review": raw.get("risk_review"),
             "generation_ms": raw.get("generation_ms"),
             "usage": raw.get("usage"),
-            "automatic_repair": False,
+            "automatic_repair": raw.get("automatic_repair") is True,
+            "recovery": raw.get("recovery") if isinstance(raw.get("recovery"), dict) else None,
         }
         if status in {"ok", "partial"}:
             if (not isinstance(execution, dict)
