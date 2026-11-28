@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Any, Callable
 
 from app.v2_text_to_sql import generate_sql_decision
+from app.v2_response_policy import normalize_unsupported_message
 
 
 def _error(code: str, message: str) -> dict:
@@ -43,6 +44,8 @@ def run_v2_query(
         "automatic_repair": False,
     }
     if decision["status"] != "sql":
+        if decision["status"] == "unsupported":
+            response["message"] = normalize_unsupported_message(question, response["message"])
         return response
 
     if inspector is None:
