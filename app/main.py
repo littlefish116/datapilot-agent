@@ -306,3 +306,7 @@ def home():
     return FileResponse(
         ROOT / "frontend" / "index.html"
     )
+
+@app.get("/v2", include_in_schema=False)
+def v2_demo_home():
+    return FileResponse(ROOT / "frontend" / "v2.html")
