@@ -14,6 +14,7 @@ from typing import Any, Mapping, TypedDict
 
 from app.sql_tools import REPORTS
 from app.v2_response_policy import normalize_unsupported_message
+from app.v3_answer_policy import targeted_monthly_report_answer
 from app.v3_tool_service import PREDICT_FIELDS, TOOLS
 
 MAX_QUESTION_CHARS = 2000
@@ -194,10 +195,13 @@ def build_v3_graph(*, backend: Any, service: Any):
                       "message": "工具返回无效结果，未展示业务数据",
                       "error": {"code": "invalid_tool_result", "message": "工具返回无效结果"},
                       "evidence": {}}
+        report_id = choice["arguments"]["report_id"] if tool == "business_report" else None
+        focused_answer = targeted_monthly_report_answer(question, result, report_id=report_id)
         return {"response": {
             "status": result["status"], "question": question,
             "selected_tool": tool, "used_tools": [tool],
-            "answer": _answer_from_result(result), "tool_result": result,
+            "answer": (focused_answer if focused_answer is not None
+                       else _answer_from_result(result)), "tool_result": result,
             "route_usage": usage, "automatic_repair": False,
         }}
 

@@ -1,25 +1,31 @@
-"""Opt-in local-only V3.1B API: one routing decision and max one tool.
+"""V3.2 local-only API with bounded, ephemeral per-session context.
 
-No session memory, authentication, rate limiting or production-facing access.
-Never run enabled V3 on a publicly reachable interface.
+V1 and V2 endpoints remain unchanged. This experimental endpoint has neither
+production authentication nor persistent chat history; never expose publicly.
 """
 from __future__ import annotations
 
 import os
+import threading
+from uuid import UUID
 
 from fastapi import APIRouter, HTTPException, Request
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from app.v2_text_to_sql import DeepSeekSQLBackend
-from app.v3_routing import run_v3_turn
+from app.v3_conversation import ConversationMissing, V3SessionStore, run_v3_conversation_turn
 from app.v3_tool_service import V3ToolService
 
 router = APIRouter(prefix="/api/v3", tags=["V3 Experimental"])
+_STORE_INIT_LOCK = threading.Lock()
 
 
 class V3ChatRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
     question: str = Field(min_length=1, max_length=2000)
+    conversation_id: UUID | None = None
+    reset_context: bool = False
 
     @field_validator("question")
     @classmethod
@@ -37,6 +43,18 @@ def _guard_local_enabled(request: Request) -> None:
         raise HTTPException(status_code=403, detail="V3 实验接口仅允许本机访问")
 
 
+def _get_sessions(request: Request) -> V3SessionStore:
+    sessions = getattr(request.app.state, "v3_sessions", None)
+    if sessions is not None:
+        return sessions
+    with _STORE_INIT_LOCK:
+        sessions = getattr(request.app.state, "v3_sessions", None)
+        if sessions is None:
+            sessions = V3SessionStore()
+            request.app.state.v3_sessions = sessions
+        return sessions
+
+
 @router.post("/chat")
 def v3_chat(payload: V3ChatRequest, request: Request):
     _guard_local_enabled(request)
@@ -45,13 +63,19 @@ def v3_chat(payload: V3ChatRequest, request: Request):
     if model is None or metadata is None:
         raise HTTPException(status_code=503, detail="延期预测模型未加载")
     try:
-        # Reuses the trusted server-side OpenAI-compatible DeepSeek adapter.
-        # SQL queries need another model request inside V2 Text-to-SQL.
         backend = DeepSeekSQLBackend()
     except Exception:
         raise HTTPException(status_code=503, detail="V3 路由模型尚未正确配置") from None
     service = V3ToolService(model=model, metadata=metadata, sql_backend=backend)
     try:
-        return run_v3_turn(payload.question, backend=backend, service=service)
+        response = run_v3_conversation_turn(
+            payload.question, store=_get_sessions(request),
+            conversation_id=str(payload.conversation_id) if payload.conversation_id else None,
+            backend=backend, service=service, reset_context=payload.reset_context,
+        )
+    except ConversationMissing as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from None
     except Exception:
-        raise HTTPException(status_code=503, detail="V3 工具调度暂时不可用") from None
+        raise HTTPException(status_code=503, detail="V3 多轮工具调度暂时不可用") from None
+    # Explicit charset also fixes mojibake in Windows PowerShell 5.1.
+    return JSONResponse(content=response, media_type="application/json; charset=utf-8")
