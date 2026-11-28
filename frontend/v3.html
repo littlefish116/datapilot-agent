@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <meta name="description" content="DataPilot V3 本地 AI 电商数据分析工作台">
+  <title>DataPilot V3 · 智能分析工作台</title>
+  <link rel="stylesheet" href="/v3/app.css">
+  <script src="/v3/app.js" defer></script>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="功能与示例">
+      <div class="brand">
+        <span class="brand-icon" aria-hidden="true">D</span>
+        <span><strong>DataPilot</strong><small>AI Analytics Studio</small></span>
+        <span class="version">V3.4</span>
+      </div>
+      <div class="sidebar-line"></div>
+      <div class="sidebar-group">
+        <div class="section-label">工作空间</div>
+        <div class="nav-item active"><span class="nav-dot" aria-hidden="true"></span> 智能数据分析</div>
+        <button type="button" id="new-chat-side" class="new-conversation">＋ 新建对话</button>
+        <div class="session-status"><span class="online-dot"></span><span id="session-state">尚未建立会话</span></div>
+      </div>
+      <div class="sidebar-group examples">
+        <div class="section-label">快速体验</div>
+        <button class="example" type="button" data-question="查询2018年3月的订单延期率">
+          <span class="example-label">业务报表</span>2018 年 3 月的订单延期率
+        </button>
+        <button class="example" type="button" data-question="查询每个月的订单延期率">
+          <span class="example-label">趋势分析</span>各月订单延期率趋势
+        </button>
+        <button class="example" type="button" data-question="统计2018年3月每天的订单数量，返回订单数最多的前5天">
+          <span class="example-label">动态 SQL</span>3 月订单高峰日期
+        </button>
+        <button class="example" type="button" data-question="评估一笔订单的延期风险：7月购买，星期二，2件商品，商品金额199.9，客户在SP州">
+          <span class="example-label">机器学习</span>订单延期风险评分
+        </button>
+      </div>
+      <div class="sidebar-bottom">
+        <p><strong>本地实验环境</strong> · Olist 历史数据</p>
+        <p>模型回答不等于独立核验。风险评分未经概率校准。</p>
+        <div class="sidebar-links"><a href="/">V1</a><a href="/v2">V2</a><span>V3</span></div>
+      </div>
+    </aside>
+
+    <main class="main-area">
+      <header class="topbar">
+        <div class="topbar-left"><span class="eyebrow">WORKSPACE / ANALYTICS</span><h1>智能数据分析</h1></div>
+        <div class="topbar-right"><span class="pill"><span class="green-dot"></span> LOCAL DEMO</span><button type="button" id="new-chat-top" class="outline-btn">新建会话</button></div>
+      </header>
+
+      <section class="chat-workspace" aria-label="V3 智能分析会话">
+        <div id="messages" class="messages" role="log" aria-live="polite" aria-relevant="additions">
+          <section id="welcome" class="welcome">
+            <div class="welcome-mark">✦</div>
+            <div class="eyebrow">YOUR ANALYTICS COPILOT</div>
+            <h2>你好，有什么数据问题？</h2>
+            <p>使用自然语言查询 Olist 历史订单、分析业务趋势，或评估单笔订单的延期风险。</p>
+            <div class="welcome-chips"><span>多轮上下文</span><span>安全 Text-to-SQL</span><span>业务可视化</span></div>
+          </section>
+        </div>
+        <div class="composer-area">
+          <div id="error-banner" class="error-banner" role="alert" hidden></div>
+          <form id="chat-form" class="composer" autocomplete="off">
+            <label class="sr-only" for="question">输入数据分析问题</label>
+            <textarea id="question" name="question" rows="2" minlength="1" maxlength="2000" required placeholder="例如：查询2018年3月的订单延期率，然后追问“那4月呢？”"></textarea>
+            <div class="composer-footer">
+              <span id="composer-note">Enter 发送 · Shift + Enter 换行 · 每次提问可能产生 API 费用</span>
+              <button type="submit" id="send" class="send-btn"><span>发送问题</span><span aria-hidden="true">↗</span></button>
+            </div>
+          </form>
+          <p class="footer-notice">实验功能仅限本机使用；数据分析结果和 SQL 统计口径仍需要独立复核。</p>
+        </div>
+      </section>
+    </main>
+  </div>
+</body>
+</html>
